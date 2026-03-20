@@ -1,6 +1,7 @@
 package com.harsh.linkedin.Post_Service.controller;
 
 
+import com.harsh.linkedin.Post_Service.auth.UserContextHolder;
 import com.harsh.linkedin.Post_Service.dto.PostCreateRequestDto;
 import com.harsh.linkedin.Post_Service.dto.PostDto;
 import com.harsh.linkedin.Post_Service.service.PostService;
@@ -25,6 +26,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostDto> getPost(@PathVariable Long postId) {
+        Long userId = UserContextHolder.getCurrentUserId();
         PostDto postDto = postService.getPostById(postId);
         return ResponseEntity.ok(postDto);
     }

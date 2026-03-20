@@ -1,5 +1,8 @@
 package com.harsh.linkedin.Post_Service.service;
 
+import com.harsh.linkedin.Post_Service.auth.UserContextHolder;
+import com.harsh.linkedin.Post_Service.clients.ConnectionsClient;
+import com.harsh.linkedin.Post_Service.dto.PersonDto;
 import com.harsh.linkedin.Post_Service.dto.PostCreateRequestDto;
 import com.harsh.linkedin.Post_Service.dto.PostDto;
 import com.harsh.linkedin.Post_Service.entity.Post;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository postRepository;
     private final ModelMapper modelMapper;
+    private final ConnectionsClient connectionsClient;
     public PostDto createPost(PostCreateRequestDto requestDto, Long userId) {
         Post post = modelMapper.map(requestDto,Post.class);
         post.setUserId(userId);
@@ -30,6 +34,8 @@ public class PostService {
 
     public PostDto getPostById(Long postId) {
         log.debug("Retrieving post with ID: {}", postId);
+        Long userId = UserContextHolder.getCurrentUserId();
+        List<PersonDto> firstConnection = connectionsClient.getFirstConnections(userId);
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new ResourceNotFoundException("Post not found with id: "+postId));
         return modelMapper.map(post, PostDto.class);
