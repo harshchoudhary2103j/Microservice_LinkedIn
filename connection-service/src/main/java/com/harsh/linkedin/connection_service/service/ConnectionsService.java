@@ -1,5 +1,6 @@
 package com.harsh.linkedin.connection_service.service;
 
+import com.harsh.linkedin.connection_service.auth.UserContextHolder;
 import com.harsh.linkedin.connection_service.entity.Person;
 import com.harsh.linkedin.connection_service.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,8 @@ import java.util.List;
 public class ConnectionsService {
     private final PersonRepository personRepository;
 
-    public List<Person> getFirstDegreeConnections(Long userId) {
+    public List<Person> getFirstDegreeConnections() {
+        Long userId = UserContextHolder.getCurrentUserId();
         log.info("Getting first degree connections for user with id: {}", userId);
 
         return personRepository.getFirstDegreeConnections(userId);
