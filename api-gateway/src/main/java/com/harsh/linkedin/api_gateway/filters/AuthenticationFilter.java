@@ -1,6 +1,7 @@
 package com.harsh.linkedin.api_gateway.filters;
 
 import com.harsh.linkedin.api_gateway.JwtService;
+import com.harsh.linkedin.api_gateway.clients.LogoutClient;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import java.util.*;
 @Order(1)
 @RequiredArgsConstructor
 public class AuthenticationFilter implements Filter {
+    private final LogoutClient logoutClient;
 
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/v1/users/auth/login",
@@ -54,6 +56,13 @@ public class AuthenticationFilter implements Filter {
         String token = tokenHeader.split("Bearer ")[1];
 
         try {
+
+            Boolean isBlackListed = logoutClient.isTokenBlacklisted(token);
+            if(Boolean.TRUE.equals(isBlackListed)){
+                log.warn("Blocked request: Token has been blacklisted (user logged out)");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
+            }
             String userId = jwtService.getUserIdFromToken(token);
 
             HttpServletRequest mutatedRequest = new HttpServletRequestWrapper(request) {

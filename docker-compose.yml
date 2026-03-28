@@ -5,9 +5,9 @@ services:
     image: apache/kafka:3.7.0
     container_name: kafka
     ports:
-        - "9092:9092"
+      - "9092:9092"
     networks:
-        - linkedin-network
+      - linkedin-network
     environment:
       - KAFKA_NODE_ID=1
       - KAFKA_PROCESS_ROLES=broker,controller
@@ -16,12 +16,9 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-
-      # 🔥 FIX (MOST IMPORTANT)
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
-
 
   kafbat-ui:
     container_name: kafbat-ui
@@ -35,11 +32,12 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_KSQLDBSERVER: http://ksqldb0:8088
 
   notification-db:
     image: postgres:15
     container_name: notification-db
+    ports:
+      - "5434:5432" # Access via DBeaver on port 5434
     environment:
       - POSTGRES_DB=notificationDB
       - POSTGRES_USER=postgres
@@ -52,6 +50,8 @@ services:
   posts-db:
     image: postgres:15
     container_name: posts-db
+    ports:
+      - "5433:5432" # Access via DBeaver on port 5433
     environment:
       - POSTGRES_DB=postDB
       - POSTGRES_USER=postgres
@@ -64,6 +64,8 @@ services:
   user-db:
     image: postgres:15
     container_name: user-db
+    ports:
+      - "5432:5432" # Access via DBeaver on port 5432
     environment:
       - POSTGRES_DB=usersDB
       - POSTGRES_USER=postgres
@@ -77,16 +79,18 @@ services:
     image: neo4j
     container_name: connections-db
     environment:
-      - NEO4J_AUTH=neo4j/Harsh1234  # Set your username and password
+      - NEO4J_AUTH=neo4j/Harsh1234
     ports:
-      - "7474:7474"  # HTTP port
-      - "7687:7687"  # Bolt port
+      - "7474:7474"
+      - "7687:7687"
     volumes:
-      - connections-db-data:/data  # Persist data
+      - connections-db-data:/data
     networks:
       - linkedin-network
 
   discovery-server:
+    build:
+      context: ./Discovery-Server
     image: harshchoudhary21/linkedin-app/discovery-service
     container_name: discovery-server
     networks:
@@ -95,6 +99,8 @@ services:
       - "8761:8761"
 
   posts-service:
+    build:
+      context: ./Post-Service
     image: harshchoudhary21/linkedin-app/post-service
     container_name: posts-service
     networks:
@@ -105,6 +111,8 @@ services:
       - kafka
 
   user-service:
+    build:
+      context: ./UserService
     image: harshchoudhary21/linkedin-app/user-service
     container_name: user-service
     networks:
@@ -115,6 +123,8 @@ services:
       - kafka
 
   notification-service:
+    build:
+      context: ./notification-service
     image: harshchoudhary21/linkedin-app/notification-service
     container_name: notification-service
     networks:
@@ -125,6 +135,8 @@ services:
       - kafka
 
   connections-service:
+    build:
+      context: ./connection-service
     image: harshchoudhary21/linkedin-app/connection-service
     container_name: connections-service
     networks:
@@ -135,6 +147,8 @@ services:
       - kafka
 
   api-gateway:
+    build:
+      context: ./api-gateway
     image: harshchoudhary21/linkedin-app/api-gateway
     container_name: api-gateway
     ports:
